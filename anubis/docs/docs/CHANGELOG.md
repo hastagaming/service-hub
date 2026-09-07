@@ -13,6 +13,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- This changes the project to: -->
 
+- Add WebAssembly-based proof of work checks to decrease client load and increase the complexity required to scrape past Anubis. See [Proof of Work (WebAssembly)](./admin/configuration/challenges/wasm.mdx) for more information.
+- Use a bundled version of `wasm2js` in order to make the WebAssembly proof of work checks run in non-wasm environments.
+- Make the bundled `wasm2js`/`wasm-opt` WebAssembly modules build reproducibly and fix the build on arm64.
+- Fix `npm run test:integration` so the Playwright suite can connect to browsers and Firefox can reach the test server again.
+- Add weighing rule for [Cloudflare Kitesurf](https://blog.cloudflare.com/kitesurf/). Kitesurf doesn't currently support Cookies, but it might in the future.
+- Improved Norwegian Nynorsk localization.
+- Stop clearing the authorization cookie when a challenged request did not send one. A subresource request that starts before the challenge is passed but finishes after it no longer deletes the cookie that `pass-challenge` just issued ([#1314](https://github.com/TecharoHQ/anubis/issues/1314)).
+- Fix proof of work worker spawning fallback logic to properly detect Content-Security-Policy failures and fall back to the older logic that fans out to one request per hardware core ([#1864](https://github.com/TecharoHQ/anubis/issues/1864)).
+- [Content-Security-Policy advice](./admin/configuration/content-security-policy.mdx) has been added to the documentation.
+- Passthru `Host` header as `X-Forwarded-Host` in Open Graph requests so backends can dispatch based on host.
+- Detect and block trivial attempts at [domain fronting](https://en.wikipedia.org/wiki/Domain_fronting) as bots have been starting to use that to try and turn web applications or HTTP servers into open proxies.
+- Add [HyperAgent](https://github.com/hyperbrowserai/HyperAgent/issues/91) to the headless browsers block rule.
+- Fix Dutch localization typo in the "go home" link.
+- WASM challenges now share watchdog, CSP, and defer fixes from v1.27.0.
+- WASM challenge workers now report errors to the challenge page instead of failing silently.
+- Add prebuilt binaries for NetBSD on amd64 and arm64.
+- Fix WASM build scripts on macOS, which has ancient coreutils that lacks features present on GNU+Linux.
+- Consolidate the purejs and webcrypto workers into one sha256 browser worker to avoid code duplication.
+- Rename X-Real-Ip to X-Real-I**P** in challenge metadata.
+- Fix client-supplied `X-Anubis-*` header spoofing
+- Log "challenge accepted" at INFO level when challenge is accepted, providing challenge lifecycle observability at quieter log levels than DEBUG.
+- Clarify getChallenge failure response and cite related log entry. 
+
 ## v1.27.0: Moenbryda Wilfsunnwyn
 
 Anubis v1.27.0 adds Windows Server support, automatically renames cookies based on settings to avoid infinite challenge loops, adds two new localizations, and more.
@@ -1017,7 +1040,7 @@ Livia sas Junius: Echo 2
 
 Livia sas Junius: Echo 1
 
-- Set the `X-Real-Ip` header based on the contents of `X-Forwarded-For`
+- Set the `X-Real-IP` header based on the contents of `X-Forwarded-For`
   [#62](https://github.com/TecharoHQ/anubis/issues/62)
 
 ## v1.14.0

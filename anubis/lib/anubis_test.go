@@ -406,6 +406,75 @@ func TestCookieSettings(t *testing.T) {
 	}
 }
 
+// Regression test for https://github.com/TecharoHQ/anubis/issues/1314
+//
+// A request without an Anubis cookie must not answer with a Set-Cookie that
+// clears it. Browsers issue subresource requests in parallel with the
+// challenge, so such a response can land after pass-challenge has already
+// issued a valid cookie and would delete it. A request that does carry a
+// cookie Anubis rejects must still have it cleared.
+func TestChallengeDoesNotClearAbsentCookie(t *testing.T) {
+	srv := spawnAnubis(t, Options{
+		Next:   http.NewServeMux(),
+		Policy: loadPolicies(t, "testdata/zero_difficulty.yaml", 0),
+	})
+
+	ts := httptest.NewServer(internal.RemoteXRealIP(true, "tcp", srv))
+	t.Cleanup(ts.Close)
+
+	cookieName := srv.cookieName(anubis.CookieName)
+
+	for _, tc := range []struct {
+		name      string
+		cookie    *http.Cookie
+		wantClear bool
+	}{
+		{
+			name:      "absent cookie is left alone",
+			cookie:    nil,
+			wantClear: false,
+		},
+		{
+			name:      "unparseable token is cleared",
+			cookie:    &http.Cookie{Name: cookieName, Value: "not-a-jwt"},
+			wantClear: true,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			req, err := http.NewRequest(http.MethodGet, ts.URL+"/", nil)
+			if err != nil {
+				t.Fatalf("can't make request: %v", err)
+			}
+
+			if tc.cookie != nil {
+				req.AddCookie(tc.cookie)
+			}
+
+			resp, err := httpClient(t).Do(req)
+			if err != nil {
+				t.Fatalf("can't do request: %v", err)
+			}
+			t.Cleanup(func() { resp.Body.Close() }) //nolint:errcheck
+
+			if resp.StatusCode != http.StatusOK {
+				t.Errorf("wanted the challenge page with status %d, got: %d", http.StatusOK, resp.StatusCode)
+			}
+
+			var cleared bool
+			for _, ckie := range resp.Cookies() {
+				t.Logf("%#v", ckie)
+				if ckie.Name == cookieName && ckie.MaxAge < 0 {
+					cleared = true
+				}
+			}
+
+			if cleared != tc.wantClear {
+				t.Errorf("wanted cookie %q cleared: %v, got: %v", cookieName, tc.wantClear, cleared)
+			}
+		})
+	}
+}
+
 func TestCheckDefaultDifficultyMatchesPolicy(t *testing.T) {
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "OK") //nolint:errcheck
@@ -429,7 +498,7 @@ func TestCheckDefaultDifficultyMatchesPolicy(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			req.Header.Add("X-Real-Ip", "127.0.0.1")
+			req.Header.Add("X-Real-IP", "127.0.0.1")
 
 			cr, bot, err := s.check(req, s.logger)
 			if err != nil {
@@ -662,6 +731,72 @@ func TestCustomStatusCodes(t *testing.T) {
 	}
 }
 
+func assertHeaderValues(t *testing.T, header http.Header, name string, want ...string) {
+	t.Helper()
+
+	got := header.Values(name)
+	if len(got) != len(want) {
+		t.Fatalf("header %s has values %q, wanted %q", name, got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("header %s has values %q, wanted %q", name, got, want)
+		}
+	}
+}
+
+func TestDownstreamAnubisHeadersAreAuthoritative(t *testing.T) {
+	const attackerValue = "attacker-controlled"
+
+	t.Run("explicit allow", func(t *testing.T) {
+		for _, tc := range []struct {
+			name  string
+			spoof bool
+		}{
+			{name: "ordinary request"},
+			{name: "spoofed headers", spoof: true},
+		} {
+			t.Run(tc.name, func(t *testing.T) {
+				var forwarded http.Header
+				srv := spawnAnubis(t, Options{
+					Next: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						forwarded = r.Header.Clone()
+						w.WriteHeader(http.StatusNoContent)
+					}),
+					Policy: loadPolicies(t, "testdata/permissive.yaml", 4),
+				})
+
+				req := httptest.NewRequest(http.MethodGet, "http://example.com/", nil)
+				req.Header.Set("X-Real-IP", "127.0.0.1")
+				if tc.spoof {
+					req.Header["X-Anubis-Rule"] = []string{attackerValue, "second-attacker-value"}
+					req.Header["X-Anubis-Action"] = []string{attackerValue, "second-attacker-value"}
+					req.Header["X-Anubis-Status"] = []string{attackerValue, "second-attacker-value"}
+					req.Header.Set("Connection", "keep-alive, x-anubis-rule, X-Anubis-Status")
+				}
+
+				cr, _, err := srv.check(req, srv.logger)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				rr := httptest.NewRecorder()
+				srv.maybeReverseProxyOrPage(rr, req)
+
+				if forwarded == nil {
+					t.Fatal("request was not forwarded")
+				}
+				assertHeaderValues(t, forwarded, "X-Anubis-Rule", cr.Name)
+				assertHeaderValues(t, forwarded, "X-Anubis-Action", string(cr.Rule))
+				assertHeaderValues(t, forwarded, "X-Anubis-Status")
+				if tc.spoof {
+					assertHeaderValues(t, forwarded, "Connection", "keep-alive")
+				}
+			})
+		}
+	})
+}
+
 func TestCloudflareWorkersRule(t *testing.T) {
 	for _, variant := range []string{"cel", "header"} {
 		t.Run(variant, func(t *testing.T) {
@@ -686,7 +821,7 @@ func TestCloudflareWorkersRule(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				req.Header.Add("X-Real-Ip", "127.0.0.1")
+				req.Header.Add("X-Real-IP", "127.0.0.1")
 				req.Header.Add("Cf-Worker", "true")
 
 				cr, _, err := s.check(req, s.logger)
@@ -705,7 +840,7 @@ func TestCloudflareWorkersRule(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				req.Header.Add("X-Real-Ip", "127.0.0.1")
+				req.Header.Add("X-Real-IP", "127.0.0.1")
 
 				cr, _, err := s.check(req, s.logger)
 				if err != nil {
@@ -1077,7 +1212,7 @@ func TestPassChallengeNilRuleChallengeFallback(t *testing.T) {
 	q.Set("id", chall.ID)
 	q.Set("challenge", chall.RandomData)
 	req.URL.RawQuery = q.Encode()
-	req.Header.Set("X-Real-Ip", "203.0.113.4")
+	req.Header.Set("X-Real-IP", "203.0.113.4")
 	req.Header.Set("User-Agent", "NilChallengeTester/1.0")
 	req.AddCookie(&http.Cookie{Name: srv.cookieName(anubis.TestCookieName), Value: chall.ID})
 
@@ -1113,7 +1248,7 @@ func TestXForwardedForNoDoubleComma(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	req.Header.Set("X-Real-Ip", "10.0.0.1")
+	req.Header.Set("X-Real-IP", "10.0.0.1")
 
 	resp, err := ts.Client().Do(req)
 	if err != nil {
