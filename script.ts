@@ -1,5 +1,9 @@
+export {}
+
 declare global {
-    const Supabase: any;
+    interface Window {
+        supabase: any;
+    }
 }
 
 interface TorrentTask {
@@ -28,9 +32,9 @@ interface ServiceBlueprint {
 }
 
 // --- Supabase System Configurations ---
-const SUPABASE_URL: string = "YOUR_SUPABASE_PROJECT_URL"; 
-const SUPABASE_KEY: string = "YOUR_SUPABASE_ANON_PUBLIC_KEY";
-const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL: string = "https://ddxantdqxalfnznxoexo.supabase.co";
+const SUPABASE_KEY: string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeGFudGRxeGFsZm56bnhvZXhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NTUxNzAsImV4cCI6MjEwNDMzMTE3MH0.bRCs7sPHByjVPEfKEzievT1iJorvRXabHjk3JZOumKY";
+const supabase = (window as any).supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let isHuman: boolean = false;
 let rpcSessionId: string = "";
