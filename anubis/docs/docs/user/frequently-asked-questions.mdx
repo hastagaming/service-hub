@@ -1,0 +1,45 @@
+# Frequently Asked Questions
+
+## Why are challenge details not embedded into the human-readable part of challenge pages?
+
+Many people have asked why the challenge details are not embedded into challenge pages so they do not have to run JavaScript. There are many instances where malware [asks the user to paste something into their run box on Windows](https://www.malwarebytes.com/blog/news/2025/03/fake-captcha-websites-hijack-your-clipboard-to-install-information-stealers). This malware adds your computer to a botnet, steal information, or encrypt all file contents for a ransom.
+
+In order for Anubis' protection to be effective, Anubis must not give users instructions akin to this kind of malware. Anubis does not require user input and must function automatically via JavaScript. Anubis must not require users to paste code into terminals or run boxes to pass challenges.
+
+Technically inclined users are able to understand how the proof of work challenge works and write their own solver. The format of the challenges and algorithms used are liable to change without notice. Any details about challenges are not part of the public API of Anubis. When such a change occurs, those workarounds will break.
+
+## Why does Anubis use Web Workers?
+
+Anubis uses [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) to execute challenge logic for two main reasons:
+
+1. Browsers block the main rendering thread when JavaScript executes. The challenge logic comprises many blocking math operations. Executing challenge logic on the main thread can cause browsers to hang and not respond to user input. Running challenge logic in Web Workers fixes this.
+2. Web Workers enable executing JavaScript code across multiple CPU threads. Multithreading enables Anubis challenges to run in parallel across all system cores, making the challenge page complete as fast as possible. Anubis challenges scale horizontally because modern hardware advancements are mostly around parallelism.
+
+If you use a browser extension such as [JShelter](https://jshelter.org/), you will need to [modify settings](./known-broken-extensions.md#jshelter) to allow challenges to complete.
+
+## Does Anubis mine Bitcoin?
+
+No. Anubis does not mine Bitcoin or any other cryptocurrency.
+
+## I disabled Just-in-time compilation in my browser. Why is Anubis slow?
+
+Anubis challenges run many complicated math operations in a tight loop. [Just-in-time (JIT) compilation](https://en.wikipedia.org/wiki/Just-in-time_compilation) optimizes JavaScript execution by a significant degree. The JIT enables browsers to execute code as if it was natively written for your computer. Anubis' JavaScript challenges benefit from JIT complication, running much faster with the JIT enabled.
+
+Without the JIT enabled, all JavaScript programs run through a slow interpreter. This slow interpreter translates single lines of JavaScript into many dozens of machine instructions instead of JIT-ing down to single machine instructions. It takes longer to emulate the JavaScript environment to add numbers than it does to have the JIT add the numbers directly.
+
+Some users choose to disable the JIT as a security hardening measure. Depending on threat profiles, this may be a reasonable action. Keep in mind that disabling the browser feature that makes Anubis fast makes Anubis slow.
+
+If you have disabled the JIT and find Anubis checks slow, please re-enable the JIT. There is no way for Anubis to work around you choosing to disable the browser feature that makes Anubis fast.
+
+## What versions of browsers does Anubis support?
+
+Anubis supports at least the following:
+
+- Google Chrome/Chromium 75 and later
+- Mozilla Firefox 120 and later
+- Safari 10 and later
+- Pale Moon 33 and later
+
+Anubis may support other browsers, but development prioritizes the above browsers. If you discover compatibility issues, please file a bug report with OS, browser, and hardware model number information.
+
+If you work on a browser that does not work with Anubis and want us to automatically test it, please [submit a functional test](https://github.com/TecharoHQ/anubis/tree/main/test/palemoon/amd64) so that we know of failures instantly.

@@ -1,0 +1,12 @@
+- name: lightpanda
+  action: DENY
+  expression:
+    any:
+      - 'userAgent.matches("(?i:lightpanda)")'
+      - '"Sec-Ch-Ua" in headers && headers["Sec-Ch-Ua"].matches("(?i:lightpanda)")'
+- name: headless-chrome
+  user_agent_regex: HeadlessChrome
+  action: DENY
+- name: headless-chromium
+  user_agent_regex: HeadlessChromium
+  action: DENY

@@ -1,0 +1,46 @@
+name: SSH CI
+
+on:
+  push:
+    branches: ["main"]
+  # pull_request:
+  #   branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  ssh:
+    if: github.repository == 'TecharoHQ/anubis'
+    #runs-on: alrest-techarohq
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        host:
+          - riscv64
+          - ppc64le
+          #- aarch64-4k
+          #- aarch64-16k
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-tags: true
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install CI target SSH key
+        uses: shimataro/ssh-key-action@87a8f067114a8ce263df83e9ed5c849953548bc3 # v2.8.1
+        with:
+          key: ${{ secrets.CI_SSH_KEY }}
+          name: id_rsa
+          known_hosts: ${{ secrets.CI_SSH_KNOWN_HOSTS }}
+
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version: "stable"
+
+      - name: Run CI
+        run: go run ./utils/cmd/backoff-retry bash test/ssh-ci/rigging.sh ${{ matrix.host }}
+        env:
+          GITHUB_RUN_ID: ${{ github.run_id }}
