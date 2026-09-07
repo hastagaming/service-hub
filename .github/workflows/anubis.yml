@@ -14,14 +14,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Prepare
-        run: chmod +x ./anubis/var/anubis
-
       - name: Start Anubis
-        env:
-          BIND: 0.0.0.0:8923
-          TARGET: https://hastagaming.github.io/service-hub/
-          TARGET_HOST: hastagaming.github.io
-          TARGET_SNI: hastagaming.github.io
-          USE_REMOTE_ADDRESS: "true"
-        run: ./anubis/var/anubis
+        run: |
+          echo "=== setup directory ==="
+          cd anubis
+
+          echo "=== granted permission for anubis ==="
+          chmod +x ./var/anubis
+
+          echo "=== start anubis engine ==="
+          BIND=127.0.0.1:8923 \
+          TARGET=https://hastagaming.github.io/service-hub/ \
+          TARGET_HOST=hastagaming.github.io \
+          TARGET_SNI=hastagaming.github.io \
+          USE_REMOTE_ADDRESS=true \
+          ./var/anubis
