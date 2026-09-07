@@ -1,0 +1,26 @@
+name: Anubis Server
+
+on:
+  workflow_dispatch:
+
+jobs:
+  anubis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Prepare
+        working-directory: ./anubis
+        run: chmod +x ./var/anubis
+
+      - name: Start Anubis
+        working-directory: ./anubis
+        env:
+          BIND: 0.0.0.0:8923
+          TARGET: https://hastagaming.github.io/service-hub/
+          TARGET_HOST: hastagaming.github.io
+          TARGET_SNI: hastagaming.github.io
+          USE_REMOTE_ADDRESS: "true"
+        run: ./var/anubis

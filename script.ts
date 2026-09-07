@@ -55,8 +55,6 @@ const registeredServices: ServiceBlueprint[] = [
 const DOM = {
     gateway: document.getElementById('gateway') as HTMLDivElement,
     mainApp: document.getElementById('main-app') as HTMLDivElement,
-    botCheck: document.getElementById('bot-check') as HTMLDivElement,
-    botSection: document.getElementById('bot-section') as HTMLDivElement,
     authSection: document.getElementById('auth-section') as HTMLDivElement,
     loginBtn: document.getElementById('login-btn') as HTMLButtonElement,
     logoutBtn: document.getElementById('logout-btn') as HTMLButtonElement,
@@ -74,7 +72,6 @@ const DOM = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-    DOM.botCheck.addEventListener("click", verifyHumanSignature);
     DOM.loginBtn.addEventListener("click", executionLoginSequence);
     DOM.logoutBtn.addEventListener("click", logOutNodeSession);
     DOM.scratchpad.addEventListener("input", synchronizeScratchpadData);
@@ -86,16 +83,6 @@ document.addEventListener("DOMContentLoaded", () => {
     DOM.scratchpad.value = localStorage.getItem('termux_notes') || '';
     checkActiveUserSession();
 });
-
-function verifyHumanSignature(): void {
-    DOM.botCheck.classList.add('checked');
-    isHuman = true;
-    setTimeout(() => {
-        DOM.botSection.style.display = 'none';
-        DOM.authSection.style.display = 'block';
-        bodyFlexAdjustment(false);
-    }, 600);
-}
 
 async function checkActiveUserSession(): Promise<void> {
     const { data: { session } } = await supabase.auth.getSession();
