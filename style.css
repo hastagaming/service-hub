@@ -1,0 +1,238 @@
+:root {
+    --bg: #05060b;
+    --panel: rgba(15, 18, 36, 0.6);
+    --accent: #00ffcc;
+    --accent-purple: #bd93f9;
+    --text: #f0f3f8;
+    --text-dim: #7982a7;
+    --border: rgba(255, 255, 255, 0.05);
+}
+
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+}
+
+body { 
+    background: var(--bg); 
+    color: var(--text); 
+    min-height: 100vh; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    padding: 24px; 
+}
+
+/* Gateway Screen Overlay Layouts */
+.gateway-card { 
+    background: #0f1015; 
+    border: 1px solid rgba(255, 255, 255, 0.08); 
+    padding: 40px; 
+    border-radius: 24px; 
+    width: 100%; 
+    max-width: 420px; 
+    text-align: center; 
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6); 
+    position: absolute; 
+    z-index: 99999;
+}
+.gateway-card h2 { font-size: 1.5rem; margin-bottom: 8px; color: #fff; }
+.gateway-card p { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 24px; }
+
+.gateway-card input { 
+    width: 100%; 
+    padding: 14px; 
+    background: rgba(0,0,0,0.3); 
+    border: 1px solid var(--border); 
+    border-radius: 8px; 
+    color: #fff; 
+    margin-bottom: 16px; 
+    font-size: 1rem; 
+}
+.gateway-card input:focus { border-color: var(--accent); outline: none; }
+
+.gateway-card button { 
+    width: 100%; 
+    padding: 14px; 
+    background: var(--accent); 
+    border: none; 
+    border-radius: 8px; 
+    color: #090a0f; 
+    font-weight: 700; 
+    font-size: 1rem; 
+    cursor: pointer; 
+}
+
+.bot-box { 
+    background: rgba(255, 255, 255, 0.03); 
+    border: 1px dashed var(--border); 
+    padding: 20px; 
+    border-radius: 12px; 
+    margin-bottom: 20px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+}
+.bot-text { font-size: 0.9rem; text-align: left; color: var(--text-dim); }
+
+.checkbox-container { 
+    width: 24px; 
+    height: 24px; 
+    border: 2px solid var(--text-dim); 
+    border-radius: 6px; 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    flex-shrink: 0; 
+}
+.checkbox-container.checked { background: var(--accent); border-color: var(--accent); }
+.checkbox-container.checked::after { content: "✓"; color: #090a0f; font-weight: bold; }
+
+#auth-section { display: none; }
+#msg { margin-top: 12px; font-size: 0.85rem; color: #ff5555; }
+
+/* Dashboard Parent Structure Grid */
+#main-app { 
+    display: none; 
+    width: 100%; 
+    max-width: 1200px; 
+    align-self: flex-start; 
+}
+.app-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    border-bottom: 1px solid var(--border); 
+    padding-bottom: 16px; 
+    margin-bottom: 24px; 
+}
+.app-header h1 { font-size: 1.4rem; color: #fff; }
+.subtitle { font-size: 0.85rem; color: var(--text-dim); }
+.header-controls { display: flex; align-items: center; gap: 15px; }
+#user-display { font-size: 0.85rem; color: var(--text-dim); }
+
+.logout-btn { 
+    background: transparent; 
+    border: 1px solid rgba(255, 53, 53, 0.4); 
+    color: #ff5555; 
+    padding: 6px 12px; 
+    font-size: 0.8rem; 
+    width: auto; 
+    border-radius: 20px; 
+    cursor: pointer; 
+}
+
+.grid-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+@media(max-width: 900px) { .grid-layout { grid-template-columns: 1fr; } }
+.column-stack { display: flex; flex-direction: column; gap: 24px; }
+
+.card { 
+    background: var(--panel); 
+    border: 1px solid var(--border); 
+    border-radius: 20px; 
+    padding: 24px; 
+    backdrop-filter: blur(16px); 
+}
+.card h2 { font-size: 1.1rem; color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+.card-desc { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 12px; }
+
+/* Quick Launcher System Buttons */
+.app-launcher { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; }
+.app-btn { 
+    background: rgba(255,255,255,0.02); 
+    border: 1px solid var(--border); 
+    padding: 20px; 
+    border-radius: 16px; 
+    text-align: center; 
+    cursor: pointer; 
+    text-decoration: none; 
+    color: #fff; 
+    transition: 0.3s; 
+}
+.app-btn:hover, .app-btn.active-app { 
+    border-color: var(--accent); 
+    transform: translateY(-3px); 
+    background: rgba(0, 255, 204, 0.03); 
+}
+.app-icon { font-size: 1.8rem; margin-bottom: 8px; display: block; }
+.app-title { font-size: 0.9rem; font-weight: 600; }
+
+.stats-bar { display: flex; gap: 16px; margin: 12px 0; padding: 4px 0; }
+.stat-item { font-size: 0.85rem; color: var(--text-dim); }
+.stat-item span { color: var(--accent); font-weight: 600; margin-left: 4px; }
+
+/* DYNAMIC GLASSMORPHISM TORRENT CARDS STYLES PRESERVED EXACTLY */
+#torrent-list { list-style: none; padding: 0; width: 100%; }
+.torrent-card { 
+    background: rgba(10, 12, 22, 0.5); 
+    border: 1px solid rgba(255, 255, 255, 0.04); 
+    border-radius: 16px; 
+    padding: 16px; 
+    margin-bottom: 12px; 
+    backdrop-filter: blur(12px); 
+    text-align: left; 
+}
+.torrent-meta { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px; }
+.progress-container { width: 100%; height: 5px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+.progress-bar { height: 100%; background: linear-gradient(90deg, #00ffcc, #00bfff); width: 0%; transition: width 0.4s; }
+.empty-state { text-align: center; color: var(--text-dim); padding: 40px 0; font-size: 0.95rem; }
+
+/* Real-Time Telemetry Multi-Services Row Blocks */
+.telemetry-list { display: flex; flex-direction: column; gap: 14px; }
+.svc-row { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    font-size: 0.9rem; 
+    color: #fff; 
+    background: rgba(255,255,255,0.02); 
+    padding: 10px 14px; 
+    border-radius: 10px; 
+    border: 1px solid var(--border); 
+}
+.svc-status { 
+    font-weight: 600; 
+    font-size: 0.8rem; 
+    text-transform: uppercase; 
+    letter-spacing: 0.5px; 
+    padding: 2px 8px; 
+    border-radius: 6px; 
+}
+.svc-status.online { background: rgba(0, 255, 204, 0.15); color: var(--accent); }
+.svc-status.offline { background: rgba(255, 85, 85, 0.15); color: #ff5555; }
+.svc-status.loading { background: rgba(255, 255, 255, 0.05); color: var(--text-dim); }
+
+/* Note Canvas */
+textarea { 
+    width: 100%; 
+    height: 150px; 
+    background: rgba(0,0,0,0.2); 
+    border: 1px solid var(--border); 
+    border-radius: 12px; 
+    color: #fff; 
+    padding: 12px; 
+    resize: none; 
+    font-size: 0.95rem; 
+}
+textarea:focus { outline: none; border-color: var(--accent-purple); }
+
+/* Patch overrides resolving spatial conflicts with native transmission-app.css */
+.spec-torrent-container #mainwin-toolbar, 
+.spec-torrent-container #mainwin-statusbar { 
+    position: relative !important; 
+    top: auto !important; 
+    left: auto !important; 
+    width: 100% !important; 
+    margin-bottom: 8px; 
+    border-radius: 8px; 
+}
+.spec-torrent-container #mainwin-workarea { 
+    position: relative !important; 
+    top: auto !important; 
+    height: auto !important; 
+    width: 100% !important; 
+    background: transparent !important; 
+}

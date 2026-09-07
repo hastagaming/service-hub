@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" xml:lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=8,IE=9,IE=10" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>Service Central(termux system)</title>
+    <!-- Preservation of stylesheet routing parameters -->
+    <link rel="stylesheet" href="./transmission-app.css">
+    <link rel="stylesheet" href="./style.css">
+    <link rel="icon" href="./images/favicon.ico" sizes="16x16 32x32" />
+    <link rel="icon" href="./images/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./images/apple-touch-icon.png" />
+    <script src="https://jsdelivr.net"></script>
+</head>
+<body>
+
+    <!-- 1. THE SECURE GATEWAY SCREEN -->
+    <div id="gateway" class="gateway-card">
+        <h2>⚡ STATION.UI GATEWAY</h2>
+        <p>Verification required to access node.</p>
+        
+        <!-- Bot Verification Challenge -->
+        <div id="bot-section">
+            <div class="bot-box">
+                <span class="bot-text">Verify you are an authorized system operator (Not a Bot)</span>
+                <div class="checkbox-container" id="bot-check"></div>
+            </div>
+        </div>
+
+        <!-- Supabase Login Form -->
+        <div id="auth-section">
+            <input type="email" id="email" placeholder="Operator Email" required>
+            <input type="password" id="password" placeholder="Access Password" required>
+            <button id="login-btn">Request Authentication</button>
+            <div id="msg"></div>
+        </div>
+    </div>
+
+    <!-- 2. THE PROTECTED MULTIPURPOSE DASHBOARD CORE -->
+    <div id="main-app">
+        <header class="app-header">
+            <div>
+                <h1>🛰️ TERMUX.NODE // HUB</h1>
+                <p class="subtitle">Multipurpose Cloud Workspace Environment</p>
+            </div>
+            <div class="header-controls">
+                <span id="user-display"></span>
+                <button id="logout-btn" class="logout-btn">Disconnect</button>
+            </div>
+        </header>
+
+        <!-- MULTIPURPOSE WORKSPACE MATRIX -->
+        <div class="grid-layout">
+            
+            <!-- Left Side: Core Services & Launchers -->
+            <div class="column-stack">
+                <!-- Section 1: Application Hub Launcher Matrix -->
+                <div class="card">
+                    <h2>🔌 Systems Quick Launcher</h2>
+                    <div class="app-launcher">
+                        <a href="#" class="app-btn active-app">
+                            <span class="app-icon">📥</span>
+                            <span class="app-title">Torrent Engine</span>
+                        </a>
+                        <a href="http://127.0.0.1:8080" target="_blank" class="app-btn">
+                            <span class="app-icon">📁</span>
+                            <span class="app-title">File Explorer</span>
+                        </a>
+                        <a href="http://127.0.0.1:9000" target="_blank" class="app-btn">
+                            <span class="app-icon">🐚</span>
+                            <span class="app-title">Web Terminal</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Section 2: Active Torrent Module Workspace (Native Controls + Styles Respected) -->
+                <div class="card spec-torrent-container">
+                    <h2>📥 Live BitTorrent Core Pipeline</h2>
+                    
+                    <!-- NATIVE TRANSMISSION TOOLBAR -->
+                    <header class="mainwin-toolbar" id="mainwin-toolbar">
+                        <button aria-keyshortcuts="Alt+O" aria-label="Open torrent" class="toolbar-button" data-action="open-torrent" id="toolbar-open" tabindex="0">Open</button>
+                        <button aria-keyshortcuts="Alt+Delete" aria-label="Remove selected torrents" class="toolbar-button" data-action="remove-selected-torrents" id="toolbar-delete" tabindex="0">Delete</button>
+                        <div class="toolbar-separator"></div>
+                        <button aria-keyshortcuts="Alt+R" aria-label="Resume selected torrents" class="toolbar-button" data-action="resume-selected-torrents" id="toolbar-start" tabindex="0">Start</button>
+                        <button aria-keyshortcuts="Alt+P" aria-label="Pause selected torrents" class="toolbar-button" data-action="pause-selected-torrents" id="toolbar-pause" tabindex="0">Stop</button>
+                        <div class="toolbar-separator"></div>
+                        <button aria-keyshortcuts="Alt+I" aria-label="Toggle inspector" class="toolbar-button" data-action="show-inspector" id="toolbar-inspector" tabindex="0">Inspector</button>
+                        <span class="flexible-space"></span>
+                        <button aria-keyshortcuts="Alt+M" aria-label="Show sidebar menu" class="toolbar-button" data-action="show-overflow-menu" id="toolbar-overflow" tabindex="0"></button>
+                    </header>
+
+                    <!-- NATIVE TRANSMISSION STATUSBAR -->
+                    <header id="mainwin-statusbar">
+                        <span>Show</span>
+                        <select id="filter-mode"></select>
+                        <select id="filter-tracker"></select>
+                        <div style="display: flex; position: relative">
+                          <input type="search" id="torrent-search" placeholder="Filter" />
+                          <input type="reset" id="reset" value="&times;" />
+                        </div>
+                        <span id="filter-count">&nbsp;</span>
+                        <span class="flexible-space"></span>
+                        <button id="turtle"></button>
+                    </header>
+
+                    <!-- Combined Status Speed Metrics Display -->
+                    <div class="stats-bar">
+                        <div class="stat-item">Down:<span id="global-down">0 KB/s</span></div>
+                        <div class="stat-item">Up:<span id="global-up">0 KB/s</span></div>
+                    </div>
+
+                    <!-- Work Area Wrapper -->
+                    <main id="mainwin-workarea">
+                        <div id="torrent-container">
+                            <ul id="torrent-list">
+                                <li class="empty-state">Connecting to Termux core daemon...</li>
+                            </ul>
+                        </div>
+                    </main>
+
+                    <!-- Native Drop Zone Component Container -->
+                    <div class="upload-div">
+                        <h2>Drag your torrent files here to add them to Transmission.</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Secondary Utility Controls -->
+            <div class="column-stack">
+                <!-- Section 3: Full Service Management Cluster (Wiki Dataset Linked Natively) -->
+                <div class="card">
+                    <h2>📊 Environmental Telemetry Matrix</h2>
+                    <p class="card-desc">Real-time status tracking of all registered Termux background services nodes.</p>
+                    <div class="telemetry-list" id="services-matrix-list">
+                        <!-- Natively populated dynamically by script.ts runtime parameters -->
+                        <div class="svc-row">OpenSSH Server (sshd) <span class="svc-status loading">Probing...</span></div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Shared Server Cloud Notepad -->
+                <div class="card">
+                    <h2>📝 Live Node Scratchpad</h2>
+                    <p class="card-desc">Persistent text notes saved locally inside your Termux storage framework.</p>
+                    <textarea id="scratchpad" placeholder="Drop download magnet links, clipboard entries, or script arguments securely here..."></textarea>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Script Injection -->
+    <script src="script.js"></script>
+</body>
+</html>
