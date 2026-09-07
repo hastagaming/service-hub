@@ -28,8 +28,6 @@ const registeredServices = [
 const DOM = {
     gateway: document.getElementById('gateway'),
     mainApp: document.getElementById('main-app'),
-    botCheck: document.getElementById('bot-check'),
-    botSection: document.getElementById('bot-section'),
     authSection: document.getElementById('auth-section'),
     loginBtn: document.getElementById('login-btn'),
     logoutBtn: document.getElementById('logout-btn'),
@@ -46,7 +44,6 @@ const DOM = {
     toolbarPause: document.getElementById('toolbar-pause')
 };
 document.addEventListener("DOMContentLoaded", () => {
-    DOM.botCheck.addEventListener("click", verifyHumanSignature);
     DOM.loginBtn.addEventListener("click", executionLoginSequence);
     DOM.logoutBtn.addEventListener("click", logOutNodeSession);
     DOM.scratchpad.addEventListener("input", synchronizeScratchpadData);
@@ -56,15 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
     DOM.scratchpad.value = localStorage.getItem('termux_notes') || '';
     checkActiveUserSession();
 });
-function verifyHumanSignature() {
-    DOM.botCheck.classList.add('checked');
-    isHuman = true;
-    setTimeout(() => {
-        DOM.botSection.style.display = 'none';
-        DOM.authSection.style.display = 'block';
-        bodyFlexAdjustment(false);
-    }, 600);
-}
 function checkActiveUserSession() {
     return __awaiter(this, void 0, void 0, function* () {
         const { data: { session } } = yield supabase.auth.getSession();
