@@ -18,19 +18,16 @@ package test
 import (
 	"flag"
 	"fmt"
-	"net"
 	"net/http"
-	"net/http/httptest"
 	"net/url"
 	"os"
 	"os/exec"
-	"strconv"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 
 	"github.com/TecharoHQ/anubis"
-	libanubis "github.com/TecharoHQ/anubis/lib"
 	"github.com/mxschmitt/playwright-go"
 )
 
@@ -159,13 +156,19 @@ func daemonize(t *testing.T, command string) {
 	cmd.Stdin = nil
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
+	// Run in its own process group so cleanup can reap the whole tree. Killing
+	// only sh leaves the server holding the test binary's stdout, which makes go
+	// test report "Test I/O incomplete" and fail even when every test passed.
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
 	if err := cmd.Start(); err != nil {
 		t.Fatalf("can't daemonize command: %v", err)
 	}
 
 	t.Cleanup(func() {
-		cmd.Process.Kill()
+		if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL); err != nil {
+			t.Logf("can't kill process group of %d: %v", cmd.Process.Pid, err)
+		}
 	})
 }
 
@@ -230,9 +233,7 @@ func TestPlaywrightBrowser(t *testing.T) {
 
 	for _, typ := range browsers {
 		t.Run(typ.Name()+"/warmup", func(t *testing.T) {
-			browser, err := typ.Connect(buildBrowserConnect(typ.Name()), playwright.BrowserTypeConnectOptions{
-				ExposeNetwork: playwright.String("<loopback>"),
-			})
+			browser, err := typ.Connect(buildBrowserConnect(typ.Name()))
 			if err != nil {
 				t.Fatalf("could not connect to remote browser: %v", err)
 			}
@@ -241,7 +242,7 @@ func TestPlaywrightBrowser(t *testing.T) {
 			ctx, err := browser.NewContext(playwright.BrowserNewContextOptions{
 				AcceptDownloads: playwright.Bool(false),
 				ExtraHttpHeaders: map[string]string{
-					"X-Real-Ip": "127.0.0.1",
+					"X-Real-IP": "127.0.0.1",
 				},
 				UserAgent: playwright.String("Sephiroth"),
 			})
@@ -318,9 +319,7 @@ func TestPlaywrightWithBasePrefix(t *testing.T) {
 
 	for _, typ := range browsers {
 		t.Run(typ.Name()+"/basePrefix", func(t *testing.T) {
-			browser, err := typ.Connect(buildBrowserConnect(typ.Name()), playwright.BrowserTypeConnectOptions{
-				ExposeNetwork: playwright.String("<loopback>"),
-			})
+			browser, err := typ.Connect(buildBrowserConnect(typ.Name()))
 			if err != nil {
 				t.Fatalf("could not connect to remote browser: %v", err)
 			}
@@ -329,7 +328,7 @@ func TestPlaywrightWithBasePrefix(t *testing.T) {
 			ctx, err := browser.NewContext(playwright.BrowserNewContextOptions{
 				AcceptDownloads: playwright.Bool(false),
 				ExtraHttpHeaders: map[string]string{
-					"X-Real-Ip": "127.0.0.1",
+					"X-Real-IP": "127.0.0.1",
 				},
 				UserAgent: playwright.String("Mozilla/5.0 (X11; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0"),
 			})
@@ -422,6 +421,12 @@ func TestPlaywrightWithBasePrefix(t *testing.T) {
 	}
 }
 
+// buildBrowserConnect returns the URL to connect to for the named browser.
+//
+// Callers pass no BrowserTypeConnectOptions: playwright-go does not implement
+// the SocksSupport channel that exposeNetwork relies on, so requesting it makes
+// the server close the connection. The browser therefore has to share the
+// host's loopback, which both supported runners do.
 func buildBrowserConnect(name string) string {
 	u, _ := url.Parse(*playwrightServer)
 
@@ -435,9 +440,7 @@ func buildBrowserConnect(name string) string {
 func executeTestCase(t *testing.T, tc testCase, typ playwright.BrowserType, anubisURL string) (action, error) {
 	deadline, _ := t.Deadline()
 
-	browser, err := typ.Connect(buildBrowserConnect(typ.Name()), playwright.BrowserTypeConnectOptions{
-		ExposeNetwork: playwright.String("<loopback>"),
-	})
+	browser, err := typ.Connect(buildBrowserConnect(typ.Name()))
 	if err != nil {
 		return "", fmt.Errorf("could not connect to remote browser: %w", err)
 	}
@@ -446,7 +449,7 @@ func executeTestCase(t *testing.T, tc testCase, typ playwright.BrowserType, anub
 	ctx, err := browser.NewContext(playwright.BrowserNewContextOptions{
 		AcceptDownloads: playwright.Bool(false),
 		ExtraHttpHeaders: map[string]string{
-			"X-Real-Ip": tc.realIP,
+			"X-Real-IP": tc.realIP,
 		},
 		UserAgent: playwright.String(tc.userAgent),
 	})
@@ -592,48 +595,5 @@ func spawnAnubis(t *testing.T) string {
 }
 
 func spawnAnubisWithOptions(t *testing.T, basePrefix string) string {
-	t.Helper()
-
-	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Content-Type", "text/html")
-		fmt.Fprintf(w, "<html><body><span id=anubis-test>%d</span></body></html>", time.Now().Unix())
-	})
-
-	policy, err := libanubis.LoadPoliciesOrDefault(t.Context(), "", anubis.DefaultDifficulty, "info", false)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	listener, err := net.Listen("tcp", ":0")
-	if err != nil {
-		t.Fatalf("can't listen on random port: %v", err)
-	}
-
-	addr := listener.Addr().(*net.TCPAddr)
-	host := "localhost"
-	port := strconv.Itoa(addr.Port)
-
-	s, err := libanubis.New(libanubis.Options{
-		Next:           h,
-		Policy:         policy,
-		ServeRobotsTXT: true,
-		Target:         "http://" + host + ":" + port,
-		BasePrefix:     basePrefix,
-	})
-	if err != nil {
-		t.Fatalf("can't construct libanubis.Server: %v", err)
-	}
-
-	ts := &httptest.Server{
-		Listener: listener,
-		Config:   &http.Server{Handler: s},
-	}
-	ts.Start()
-	t.Log(ts.URL)
-
-	t.Cleanup(func() {
-		ts.Close()
-	})
-
-	return ts.URL
+	return spawnAnubisWithCSP(t, basePrefix, "")
 }
