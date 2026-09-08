@@ -53,7 +53,6 @@ const registeredServices: ServiceBlueprint[] = [
 ];
 
 const DOM = {
-    gateway: document.getElementById('gateway') as HTMLDivElement,
     mainApp: document.getElementById('main-app') as HTMLDivElement,
     authSection: document.getElementById('auth-section') as HTMLDivElement,
     loginBtn: document.getElementById('login-btn') as HTMLButtonElement,
@@ -87,13 +86,13 @@ document.addEventListener("DOMContentLoaded", () => {
 async function checkActiveUserSession(): Promise<void> {
     const { data: { session } } = await supabase.auth.getSession();
     if (session && session.user) {
-        DOM.gateway.style.display = 'none';
+        DOM.authSection.style.display = 'none';
         DOM.mainApp.style.display = 'block';
         DOM.userDisplay.innerText = session.user.email || 'Authorized Operator';
         bodyFlexAdjustment(true);
         launchDashboardTelemetryEngines();
     } else {
-        DOM.gateway.style.display = 'block';
+        DOM.authSection.style.display = 'block';
         DOM.mainApp.style.display = 'none';
         bodyFlexAdjustment(false);
     }
