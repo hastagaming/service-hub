@@ -23,13 +23,52 @@
     <!-- anubis -->
     <script src="./script1.js"></script>
 
-        <!-- Supabase Login Form -->
-    <div id="auth-section">
-        <input type="email" id="email" placeholder="Operator Email" required>
-        <input type="password" id="password" placeholder="Access Password" required>
-        <button id="login-btn">Request Authentication</button>
-        <div id="msg"></div>
-    </div>
+    <!-- Supabase Login Form -->
+    <section id="auth-section" class="auth-gateway">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-mark" aria-hidden="true">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <div>
+                    <div class="auth-brand">SERVICE CENTRAL</div>
+                    <div class="auth-subtitle">Authentication Gateway</div>
+                </div>
+            </div>
+
+            <div class="auth-divider"></div>
+            <div class="auth-provider-list">
+                <button
+                    type="button"
+                    id="google-login-btn"
+                    class="oauth-button"
+                >
+                    <span class="oauth-icon google-icon" aria-hidden="true">G</span>
+                    <span>Continue with Google</span>
+                </button>
+                <button
+                    type="button"
+                    id="github-login-btn"
+                    class="oauth-button"
+                >
+                    <span class="oauth-icon github-icon" aria-hidden="true">
+                        GH
+                    </span>
+                    <span>Continue with GitHub</span>
+                </button>
+            </div>
+            <div id="msg"
+                 class="auth-message"
+                 role="alert"
+                 aria-live="polite"></div>
+            <div class="auth-footer">
+                <span class="auth-status-dot"></span>
+                <span>Authentication required to access Service Central</span>
+            </div>
+        </div>
+    </section>
 
     <!-- 2. THE PROTECTED MULTIPURPOSE DASHBOARD CORE -->
     <div id="main-app">
