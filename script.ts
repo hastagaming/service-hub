@@ -1,5 +1,3 @@
-export {}
-
 declare const window: Window & {
     supabase: any;
 };
