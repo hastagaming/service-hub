@@ -1,7 +1,7 @@
 export {}
 
-declare global {
-    const supabase: any;
+interface Window {
+    supabase: any;
 }
 
 interface TorrentTask {
@@ -32,7 +32,6 @@ interface ServiceBlueprint {
 // --- Supabase System Configurations ---
 const SUPABASE_URL = "https://ddxantdqxalfnznxoexo.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeGFudGRxeGFsZm56bnhvZXhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NTUxNzAsImV4cCI6MjEwNDMzMTE3MH0.bRCs7sPHByjVPEfKEzievT1iJorvRXabHjk3JZOumKY";
-const supabase = (window as any).supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const supabase = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY,
