@@ -54,18 +54,29 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 function checkActiveUserSession() {
     return __awaiter(this, void 0, void 0, function* () {
-        const { data: { session } } = yield supabase.auth.getSession();
-        if (session && session.user) {
-            DOM.authSection.style.display = 'none';
-            DOM.mainApp.style.display = 'block';
-            DOM.userDisplay.innerText = session.user.email || 'Authorized Operator';
-            bodyFlexAdjustment(true);
-            launchDashboardTelemetryEngines();
+        try {
+            const { data: { session } } = yield supabase.auth.getSession();
+            if (session && session.user) {
+                DOM.authSection.style.display = 'none';
+                DOM.mainApp.style.display = 'block';
+                DOM.userDisplay.innerText =
+                    session.user.email || 'Authorized Operator';
+                bodyFlexAdjustment(true);
+                launchDashboardTelemetryEngines();
+            }
+            else {
+                DOM.authSection.style.display = 'block';
+                DOM.mainApp.style.display = 'none';
+                bodyFlexAdjustment(false);
+            }
         }
-        else {
+        catch (error) {
+            console.error('Session check failed:', error);
             DOM.authSection.style.display = 'block';
             DOM.mainApp.style.display = 'none';
             bodyFlexAdjustment(false);
+            DOM.msg.style.color = '#ff5555';
+            DOM.msg.innerText = 'Unable to check authentication session.';
         }
     });
 }

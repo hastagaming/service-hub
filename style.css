@@ -91,7 +91,9 @@ body {
 .checkbox-container.checked { background: var(--accent); border-color: var(--accent); }
 .checkbox-container.checked::after { content: "✓"; color: #090a0f; font-weight: bold; }
 
-#auth-section { display: none; }
+#auth-section {
+    display: block;
+}
 #msg { margin-top: 12px; font-size: 0.85rem; color: #ff5555; }
 
 /* Dashboard Parent Structure Grid */
