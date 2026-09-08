@@ -1,9 +1,7 @@
 export {}
 
 declare global {
-    interface Window {
-        supabase: any;
-    }
+    const supabase: any;
 }
 
 interface TorrentTask {
@@ -32,9 +30,20 @@ interface ServiceBlueprint {
 }
 
 // --- Supabase System Configurations ---
-const SUPABASE_URL: string = "https://ddxantdqxalfnznxoexo.supabase.co";
-const SUPABASE_KEY: string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeGFudGRxeGFsZm56bnhvZXhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NTUxNzAsImV4cCI6MjEwNDMzMTE3MH0.bRCs7sPHByjVPEfKEzievT1iJorvRXabHjk3JZOumKY";
+const SUPABASE_URL = "https://ddxantdqxalfnznxoexo.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeGFudGRxeGFsZm56bnhvZXhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NTUxNzAsImV4cCI6MjEwNDMzMTE3MH0.bRCs7sPHByjVPEfKEzievT1iJorvRXabHjk3JZOumKY";
 const supabase = (window as any).supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY,
+    {
+        auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true
+        }
+    }
+);
 
 let isHuman: boolean = false;
 let rpcSessionId: string = "";
@@ -70,14 +79,8 @@ const DOM = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-    DOM.googleLoginBtn.addEventListener(
-        "click",
-        () => signInWithProvider("google")
-    );
-    DOM.githubLoginBtn.addEventListener(
-        "click",
-        () => signInWithProvider("github")
-    );
+    DOM.googleLoginBtn.addEventListener("click", () => signInWithProvider("google"));
+    DOM.githubLoginBtn.addEventListener("click", () => signInWithProvider("github"));
     DOM.logoutBtn.addEventListener("click", logOutNodeSession);
     DOM.scratchpad.addEventListener("input", synchronizeScratchpadData);
     // Wire up the native toolbar controls directly to our backend action runner
@@ -123,61 +126,58 @@ function bodyFlexAdjustment(isAppActive: boolean): void {
 async function signInWithProvider(
     provider: "google" | "github"
 ): Promise<void> {
-
-    const button =
-        provider === "google"
-            ? DOM.googleLoginBtn
-            : DOM.githubLoginBtn;
-
-    const otherButton =
-        provider === "google"
-            ? DOM.githubLoginBtn
-            : DOM.googleLoginBtn;
-
-    button.disabled = true;
-    otherButton.disabled = true;
+    DOM.googleLoginBtn.disabled = true;
+    DOM.githubLoginBtn.disabled = true;
 
     DOM.msg.style.color = "var(--accent)";
     DOM.msg.innerText =
         `Connecting to ${provider === "google" ? "Google" : "GitHub"}...`;
 
-    console.log("[OAuth] Starting:", provider);
-    console.log("[OAuth] Supabase:", supabase);
-    console.log("[OAuth] Redirect:",
-        "https://hastagaming.github.io/service-hub/"
-    );
-
     try {
+        const { data, error } =
+            await supabase.auth.signInWithOAuth({
+                provider,
+                options: {
+                    redirectTo:
+                        "https://hastagaming.github.io/service-hub/"
+                }
+            });
 
-        const result = await supabase.auth.signInWithOAuth({
-            provider,
-            options: {
-                redirectTo:
-                    "https://hastagaming.github.io/service-hub/"
-            }
-        });
+        console.log("[SERVICE CENTRAL] OAuth data:", data);
+        console.log("[SERVICE CENTRAL] OAuth error:", error);
 
-        console.log("[OAuth] Result:", result);
-
-        if (result.error) {
-            throw result.error;
+        if (error) {
+            throw error;
         }
 
-        console.log("[OAuth] Redirect initiated");
+        if (!data?.url) {
+            throw new Error(
+                "Supabase did not return an OAuth authorization URL."
+            );
+        }
+
+        console.log(
+            "[SERVICE CENTRAL] OAuth URL generated:",
+            data.url
+        );
+
+        window.location.assign(data.url);
 
     } catch (error) {
-
-        console.error("[OAuth] FAILED:", error);
+        console.error(
+            "[SERVICE CENTRAL] OAuth authentication failed:",
+            error
+        );
 
         DOM.msg.style.color = "#ff5555";
 
         DOM.msg.innerText =
             error instanceof Error
-                ? `OAuth error: ${error.message}`
+                ? error.message
                 : "OAuth authentication failed.";
 
-        button.disabled = false;
-        otherButton.disabled = false;
+        DOM.googleLoginBtn.disabled = false;
+        DOM.githubLoginBtn.disabled = false;
     }
 }
 
