@@ -94,25 +94,31 @@ function signInWithProvider(provider) {
         button.disabled = true;
         otherButton.disabled = true;
         DOM.msg.style.color = "var(--accent)";
-        DOM.msg.innerText = `Connecting to ${provider === "google" ? "Google" : "GitHub"}...`;
+        DOM.msg.innerText =
+            `Connecting to ${provider === "google" ? "Google" : "GitHub"}...`;
+        console.log("[OAuth] Starting:", provider);
+        console.log("[OAuth] Supabase:", supabase);
+        console.log("[OAuth] Redirect:", "https://hastagaming.github.io/service-hub/");
         try {
-            const { error } = yield supabase.auth.signInWithOAuth({
+            const result = yield supabase.auth.signInWithOAuth({
                 provider,
                 options: {
                     redirectTo: "https://hastagaming.github.io/service-hub/"
                 }
             });
-            if (error) {
-                throw error;
+            console.log("[OAuth] Result:", result);
+            if (result.error) {
+                throw result.error;
             }
+            console.log("[OAuth] Redirect initiated");
         }
         catch (error) {
-            console.error("OAuth authentication failed:", error);
+            console.error("[OAuth] FAILED:", error);
             DOM.msg.style.color = "#ff5555";
             DOM.msg.innerText =
                 error instanceof Error
-                    ? error.message
-                    : "Authentication service is currently unavailable.";
+                    ? `OAuth error: ${error.message}`
+                    : "OAuth authentication failed.";
             button.disabled = false;
             otherButton.disabled = false;
         }
