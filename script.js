@@ -26,7 +26,6 @@ const registeredServices = [
     { id: "transmission", name: "BitTorrent Engine (transmission)", port: 9091 }
 ];
 const DOM = {
-    gateway: document.getElementById('gateway'),
     mainApp: document.getElementById('main-app'),
     authSection: document.getElementById('auth-section'),
     loginBtn: document.getElementById('login-btn'),
@@ -57,14 +56,14 @@ function checkActiveUserSession() {
     return __awaiter(this, void 0, void 0, function* () {
         const { data: { session } } = yield supabase.auth.getSession();
         if (session && session.user) {
-            DOM.gateway.style.display = 'none';
+            DOM.authSection.style.display = 'none';
             DOM.mainApp.style.display = 'block';
             DOM.userDisplay.innerText = session.user.email || 'Authorized Operator';
             bodyFlexAdjustment(true);
             launchDashboardTelemetryEngines();
         }
         else {
-            DOM.gateway.style.display = 'block';
+            DOM.authSection.style.display = 'block';
             DOM.mainApp.style.display = 'none';
             bodyFlexAdjustment(false);
         }
