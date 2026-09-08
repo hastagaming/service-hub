@@ -91,17 +91,318 @@ body {
 .checkbox-container.checked { background: var(--accent); border-color: var(--accent); }
 .checkbox-container.checked::after { content: "✓"; color: #090a0f; font-weight: bold; }
 
+/* =========================================
+   Service Central Authentication Gateway
+   ========================================= */
+
+.auth-gateway {
+    width: 100%;
+    min-height: calc(100vh - 48px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.auth-card {
+    width: min(100%, 460px);
+    background: rgba(15, 16, 21, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: 30px;
+    box-shadow:
+        0 24px 70px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.auth-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.auth-mark {
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(0, 255, 204, 0.28);
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: rgba(0, 255, 204, 0.035);
+}
+
+.auth-mark span {
+    width: 3px;
+    border-radius: 4px;
+    background: var(--accent);
+}
+
+.auth-mark span:nth-child(1) {
+    height: 10px;
+}
+
+.auth-mark span:nth-child(2) {
+    height: 18px;
+}
+
+.auth-mark span:nth-child(3) {
+    height: 13px;
+}
+
+.auth-provider-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.oauth-button {
+    width: 100%;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 10px;
+
+    background: rgba(255, 255, 255, 0.035);
+    color: var(--text);
+
+    font-size: 0.86rem;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        transform 0.12s ease;
+}
+
+.oauth-button:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.065);
+    border-color: rgba(255, 255, 255, 0.16);
+}
+
+.oauth-button:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.oauth-button:disabled {
+    opacity: 0.55;
+    cursor: wait;
+}
+
+.oauth-icon {
+    width: 25px;
+    height: 25px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 25px;
+
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.google-icon {
+    font-family: Arial, sans-serif;
+    font-size: 1.15rem;
+}
+
+.github-icon {
+    font-size: 0.58rem;
+    letter-spacing: -0.02em;
+}
+
+.auth-brand {
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.auth-subtitle {
+    margin-top: 3px;
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+}
+
+.auth-divider {
+    height: 1px;
+    margin: 25px 0;
+    background: var(--border);
+}
+
+.auth-field {
+    margin-bottom: 18px;
+}
+
+.auth-field label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.035em;
+}
+
+.auth-input {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 48px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.025);
+    transition:
+        border-color 0.18s ease,
+        background 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.auth-input:focus-within {
+    border-color: rgba(0, 255, 204, 0.5);
+    background: rgba(0, 255, 204, 0.025);
+    box-shadow: 0 0 0 3px rgba(0, 255, 204, 0.07);
+}
+
+.auth-input input {
+    width: 100%;
+    min-width: 0;
+    height: 46px;
+    padding: 0 14px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--text);
+    font-size: 0.9rem;
+}
+
+.auth-input input::placeholder {
+    color: #50566f;
+}
+
+.auth-password input {
+    padding-right: 4px;
+}
+
+.password-toggle {
+    flex: 0 0 auto;
+    margin-right: 7px;
+    padding: 7px 9px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.password-toggle:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.auth-submit {
+    position: relative;
+    width: 100%;
+    min-height: 48px;
+    margin-top: 4px;
+    border: 1px solid rgba(0, 255, 204, 0.35);
+    border-radius: 10px;
+    background: rgba(0, 255, 204, 0.09);
+    color: var(--accent);
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        transform 0.12s ease;
+}
+
+.auth-submit:hover:not(:disabled) {
+    background: rgba(0, 255, 204, 0.14);
+    border-color: rgba(0, 255, 204, 0.55);
+}
+
+.auth-submit:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.auth-submit:disabled {
+    opacity: 0.55;
+    cursor: wait;
+}
+
+.auth-submit-loading[hidden] {
+    display: none;
+}
+
+.auth-message {
+    min-height: 0;
+    margin-top: 14px;
+    padding: 0;
+    border-radius: 9px;
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.auth-message:not(:empty) {
+    padding: 11px 12px;
+    background: rgba(255, 85, 85, 0.06);
+    border: 1px solid rgba(255, 85, 85, 0.16);
+}
+
+.auth-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+    color: var(--text-dim);
+    font-size: 0.72rem;
+    line-height: 1.4;
+}
+
+.auth-status-dot {
+    flex: 0 0 auto;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(0, 255, 204, 0.45);
+}
+
+/* Auth must remain visible until JavaScript decides otherwise. */
 #auth-section {
     display: block;
 }
 #msg { margin-top: 12px; font-size: 0.85rem; color: #ff5555; }
 
-/* Dashboard Parent Structure Grid */
-#main-app { 
-    display: none; 
-    width: 100%; 
-    max-width: 1200px; 
-    align-self: flex-start; 
+/* Keep the dashboard hidden until authentication succeeds. */
+#main-app {
+    display: none;
+}
+
+@media (max-width: 520px) {
+    .auth-gateway {
+        min-height: 100vh;
+        padding: 16px;
+    }
+
+    .auth-card {
+        padding: 24px 20px;
+        border-radius: 15px;
+    }
 }
 .app-header { 
     display: flex; 

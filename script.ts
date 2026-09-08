@@ -55,10 +55,9 @@ const registeredServices: ServiceBlueprint[] = [
 const DOM = {
     mainApp: document.getElementById('main-app') as HTMLDivElement,
     authSection: document.getElementById('auth-section') as HTMLDivElement,
-    loginBtn: document.getElementById('login-btn') as HTMLButtonElement,
+    googleLoginBtn: document.getElementById('google-login-btn') as HTMLButtonElement,
+    githubLoginBtn: document.getElementById('github-login-btn') as HTMLButtonElement,
     logoutBtn: document.getElementById('logout-btn') as HTMLButtonElement,
-    email: document.getElementById('email') as HTMLInputElement,
-    password: document.getElementById('password') as HTMLInputElement,
     msg: document.getElementById('msg') as HTMLDivElement,
     userDisplay: document.getElementById('user-display') as HTMLSpanElement,
     scratchpad: document.getElementById('scratchpad') as HTMLTextAreaElement,
@@ -71,14 +70,19 @@ const DOM = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-    DOM.loginBtn.addEventListener("click", executionLoginSequence);
+    DOM.googleLoginBtn.addEventListener(
+        "click",
+        () => signInWithProvider("google")
+    );
+    DOM.githubLoginBtn.addEventListener(
+        "click",
+        () => signInWithProvider("github")
+    );
     DOM.logoutBtn.addEventListener("click", logOutNodeSession);
     DOM.scratchpad.addEventListener("input", synchronizeScratchpadData);
-    
     // Wire up the native toolbar controls directly to our backend action runner
     DOM.toolbarStart.addEventListener("click", () => executeTransmissionRPCCommand('torrent-start'));
     DOM.toolbarPause.addEventListener("click", () => executeTransmissionRPCCommand('torrent-stop'));
-    
     DOM.scratchpad.value = localStorage.getItem('termux_notes') || '';
     checkActiveUserSession();
 });
@@ -116,21 +120,48 @@ function bodyFlexAdjustment(isAppActive: boolean): void {
     document.body.style.alignItems = isAppActive ? "flex-start" : "center";
 }
 
-async function executionLoginSequence(): Promise<void> {
-    if (!isHuman) return;
+async function signInWithProvider(
+    provider: "google" | "github"
+): Promise<void> {
+    const button =
+        provider === "google"
+            ? DOM.googleLoginBtn
+            : DOM.githubLoginBtn;
+
+    const otherButton =
+        provider === "google"
+            ? DOM.githubLoginBtn
+            : DOM.googleLoginBtn;
+
+    button.disabled = true;
+    otherButton.disabled = true;
+
     DOM.msg.style.color = "var(--accent)";
-    DOM.msg.innerText = "Checking credentials...";
-    
-    const { error } = await supabase.auth.signInWithPassword({ 
-        email: DOM.email.value.trim(), 
-        password: DOM.password.value 
-    });
-    
-    if (error) { 
-        DOM.msg.style.color = "#ff5555"; 
-        DOM.msg.innerText = error.message; 
-    } else { 
-        checkActiveUserSession(); 
+    DOM.msg.innerText = `Connecting to ${provider === "google" ? "Google" : "GitHub"}...`;
+
+    try {
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider,
+            options: {
+                redirectTo:
+                    "https://hastagaming.github.io/service-hub/"
+            }
+        });
+
+        if (error) {
+            throw error;
+        }
+    } catch (error) {
+        console.error("OAuth authentication failed:", error);
+
+        DOM.msg.style.color = "#ff5555";
+        DOM.msg.innerText =
+            error instanceof Error
+                ? error.message
+                : "Authentication service is currently unavailable.";
+
+        button.disabled = false;
+        otherButton.disabled = false;
     }
 }
 

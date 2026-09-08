@@ -28,10 +28,9 @@ const registeredServices = [
 const DOM = {
     mainApp: document.getElementById('main-app'),
     authSection: document.getElementById('auth-section'),
-    loginBtn: document.getElementById('login-btn'),
+    googleLoginBtn: document.getElementById('google-login-btn'),
+    githubLoginBtn: document.getElementById('github-login-btn'),
     logoutBtn: document.getElementById('logout-btn'),
-    email: document.getElementById('email'),
-    password: document.getElementById('password'),
     msg: document.getElementById('msg'),
     userDisplay: document.getElementById('user-display'),
     scratchpad: document.getElementById('scratchpad'),
@@ -43,7 +42,8 @@ const DOM = {
     toolbarPause: document.getElementById('toolbar-pause')
 };
 document.addEventListener("DOMContentLoaded", () => {
-    DOM.loginBtn.addEventListener("click", executionLoginSequence);
+    DOM.googleLoginBtn.addEventListener("click", () => signInWithProvider("google"));
+    DOM.githubLoginBtn.addEventListener("click", () => signInWithProvider("github"));
     DOM.logoutBtn.addEventListener("click", logOutNodeSession);
     DOM.scratchpad.addEventListener("input", synchronizeScratchpadData);
     // Wire up the native toolbar controls directly to our backend action runner
@@ -83,22 +83,38 @@ function checkActiveUserSession() {
 function bodyFlexAdjustment(isAppActive) {
     document.body.style.alignItems = isAppActive ? "flex-start" : "center";
 }
-function executionLoginSequence() {
+function signInWithProvider(provider) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (!isHuman)
-            return;
+        const button = provider === "google"
+            ? DOM.googleLoginBtn
+            : DOM.githubLoginBtn;
+        const otherButton = provider === "google"
+            ? DOM.githubLoginBtn
+            : DOM.googleLoginBtn;
+        button.disabled = true;
+        otherButton.disabled = true;
         DOM.msg.style.color = "var(--accent)";
-        DOM.msg.innerText = "Checking credentials...";
-        const { error } = yield supabase.auth.signInWithPassword({
-            email: DOM.email.value.trim(),
-            password: DOM.password.value
-        });
-        if (error) {
-            DOM.msg.style.color = "#ff5555";
-            DOM.msg.innerText = error.message;
+        DOM.msg.innerText = `Connecting to ${provider === "google" ? "Google" : "GitHub"}...`;
+        try {
+            const { error } = yield supabase.auth.signInWithOAuth({
+                provider,
+                options: {
+                    redirectTo: "https://hastagaming.github.io/service-hub/"
+                }
+            });
+            if (error) {
+                throw error;
+            }
         }
-        else {
-            checkActiveUserSession();
+        catch (error) {
+            console.error("OAuth authentication failed:", error);
+            DOM.msg.style.color = "#ff5555";
+            DOM.msg.innerText =
+                error instanceof Error
+                    ? error.message
+                    : "Authentication service is currently unavailable.";
+            button.disabled = false;
+            otherButton.disabled = false;
         }
     });
 }
