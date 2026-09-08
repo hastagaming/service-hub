@@ -1,8 +1,8 @@
 export {}
 
-interface Window {
+declare const window: Window & {
     supabase: any;
-}
+};
 
 interface TorrentTask {
     id: number;
